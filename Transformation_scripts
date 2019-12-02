@@ -1,12 +1,18 @@
-from 1 to 2:
-Attach d.db as new_db;
-create table Event(date text, title text primary key, phone_number text);
-create table Venue(address text, name text primary key, seats integer);
-create table Person(name text primary key, degree text, title text, email text);
-create table Paper(abstract text, pub_date text, title text primary key);
+Attach database 'db2.db' as new_db; 
+create table new_db.Event(date text, title text primary key, phone_number text);
+insert into new_db.Event select * from Event ;
+create table new_db.Venue(address text, name text primary key, seats integer);
+insert into new_db.Venue select * from Venue ;
+create table new_db.Person(name text primary key, degree text, title text, email text);
+insert into new_db.Person select * from Person ;
+create table new_db.Paper abstract text, pub_date text, title text primary key ;
+insert into new_db.Person select * from Paper ;
+create table new_db.hosted_at_where_and_by_whom(event text primary key, venue text, chair text, FOREIGN KEY (event) REFERENCES Event(title), FOREIGN KEY (venue) REFERENCES Venue(name), FOREIGN KEY (chair) REFERENCES Person(name));
 
-create table hosted_at_where_and_by_whom(event text primary key, venue text, chair text, FOREIGN KEY (event) REFERENCES Event(title), FOREIGN KEY (venue) REFERENCES Venue(name), FOREIGN KEY (chair) REFERENCES Person(name));
+create table new_db.the_peer_review_process(event text,paper text, author text, reviewer text,  FOREIGN KEY (event) REFERENCES Event(title), FOREIGN KEY (chair) REFERENCES Person(name),  FOREIGN KEY (paper) REFERENCES Paper(title), FOREIGN KEY (reviewer) REFERENCES Person(name), PRIMARY Key (chair, paper, author, reviewer));
 
-create table the_peer_review_process(event text,paper text, author text, reviewer text,  FOREIGN KEY (event) REFERENCES Event(title), FOREIGN KEY (chair) REFERENCES Person(name),  FOREIGN KEY (paper) REFERENCES Paper(title), FOREIGN KEY (reviewer) REFERENCES Person(name), PRIMARY Key (chair, paper, author, reviewer));
+insert into newdb.the_peer_review_process select distinct event, paper, author, reviewer from hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as ;
+
+insert into newdb.hosted_at_where_and_by_whom select distinct event, venue, chair from hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as ;
 
 

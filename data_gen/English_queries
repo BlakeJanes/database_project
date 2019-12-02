@@ -1,0 +1,31 @@
+The databases are generated on each trial run of the build_database.py script, different randomly generated results may benefit different database setups.
+All values taken in microseconds.
+You can rerun the application again to test the function, the code should work on your machine without the need to import anything.
+
+Find all abstracts associated with an event where the phone number of the chair contains an "a" and venue address contains 'B'
+//venue, paper, event
+
+select abstract from Paper inner join hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as on Paper.title=hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as.paper inner join Venue on Venue.name=hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as.venue where (instr(chair,'a')>0 and instr(Venue.address, '100')>0);
+select abstract from Paper inner join the_peer_review_process on Paper.title=the_peer_review_process.paper natural join hosted_at_where_and_by_whom inner join Venue on Venue.name=hosted_at_where_and_by_whom.venue where(instr(chair,'a')>0 and instr(Venue.address, '100')>0);
+select abstract from Paper inner join the_peer_review_process on Paper.title=the_peer_review_process.paper inner join hosted_at_where on the_peer_review_process.event = hosted_at_where.event inner join and_by_whom on and_by_whom.event = the_peer_review_process.event inner join Venue on Venue.name=hosted_at_where.venue where(instr(chair,'a')>0 and instr(Venue.address, '100')>0);
+1838.036
+1942.364
+3321.069
+
+Find all abstracts associated with an event where the phone number of the chair contains a "1" and venue address contains 'B'
+select abstract from Paper inner join hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as on Paper.title=hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as.paper inner join Venue on Venue.name=hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as.venue inner join Person on chair.name = person.name where (instr(chair,'1')>0 and instr(Venue.address, '100')>0);
+select abstract from Paper inner join the_peer_review_process on Paper.title=the_peer_review_process.paper inner join hosted_at_where_and_by_whom inner join Venue on Venue.name=hosted_at_where_and_by_whom.venue inner join Person on chair = person.name where (instr(chair,'1')>0 and instr(Venue.address, '100')>0);
+select abstract from Paper inner join the_peer_review_process on Paper.title=the_peer_review_process.paper inner join hosted_at_where on the_peer_review_process.event = hosted_at_where.event inner join and_by_whom on and_by_whom.event = the_peer_review_process.event inner join Venue on Venue.name=hosted_at_where.venue inner join Person on chair.name = person.name where (instr(chair,'1')>0 and instr(Venue.address, '100')>0);
+//venue, paper, event, person
+110.309
+113.123
+1756.189
+
+Find the email of all people who chaired an event hosted on a boulevard
+select email from Person inner join hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as on Person.name = hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as.chair inner join Venue on hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as.venue = Venue.name where (instr(Venue.address, 'Boulevard')>0);
+select email from Person inner join hosted_at_where_and_by_whom on Person.name = hosted_at_where_and_by_whom.chair inner join Venue on hosted_at_where_and_by_whom.venue = Venue.name where (instr(Venue.address, 'Boulevard')>0);
+select email from Person inner join and_by_whom on Person.name = and_by_whom.chair inner join hosted_at_where on and_by_whom.event=hosted_at_where.event inner join Venue on hosted_at_where.venue = Venue.name where (instr(Venue.address, 'Boulevard')>0);
+//venue, event. person
+925.042
+3099.472
+1999.522

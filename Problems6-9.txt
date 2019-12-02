@@ -1,0 +1,77 @@
+6:--First decomposition
+Attach database 'd2.db' as new_db;
+create table new_db.Event(date text, title text primary key, phone_number text);
+insert into new_db.Event select * from Event ;
+create table new_db.Venue(address text, name text primary key, seats integer);
+insert into new_db.Venue select * from Venue ;
+create table new_db.Person(name text primary key, degree text, title text, email text);
+insert into new_db.Person select * from Person ;
+create table new_db.Paper (abstract text, pub_date text, title text primary key) ;
+insert into new_db.Paper select * from Paper ;
+create table new_db.hosted_at_where_and_by_whom(event text primary key, venue text, chair text, FOREIGN KEY (event) REFERENCES Event(title), FOREIGN KEY (venue) REFERENCES Venue(name), FOREIGN KEY (chair) REFERENCES Person(name));
+create table new_db.the_peer_review_process(event text, paper text, author text, reviewed_by text,  FOREIGN KEY (event) REFERENCES Event(title), FOREIGN KEY (author) REFERENCES Person(name),  FOREIGN KEY (paper) REFERENCES Paper(title), FOREIGN KEY (reviewed_by) REFERENCES Person(name), PRIMARY Key (event, paper, author, reviewed_by));
+insert into new_db.the_peer_review_process select distinct event, paper, author, reviewed_by from hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as ;
+insert into new_db.hosted_at_where_and_by_whom select distinct event, venue, chair from hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as ;
+
+--Second decomposition
+attach database 'd3.db' as new_db2;
+create table new_db2.Event(date text, title text primary key, phone_number text);
+insert into new_db2.Event select * from Event ;
+create table new_db2.Venue(address text, name text primary key, seats integer);
+insert into new_db2.Venue select * from Venue ;
+create table new_db2.Person(name text primary key, degree text, title text, email text);
+insert into new_db2.Person select * from Person ;
+create table new_db2.Paper (abstract text, pub_date text, title text primary key) ;
+insert into new_db2.Paper select * from Paper ;
+create table new_db2.hosted_at_where(event text primary key, venue text,FOREIGN KEY (event) REFERENCES Event(title), FOREIGN KEY (venue) REFERENCES Venue(name));
+create table new_db2.and_by_whom(event text primary key, chair text, FOREIGN KEY (event) REFERENCES Event(title),FOREIGN KEY (chair) REFERENCES Person(name));
+create table new_db2.the_peer_review_process(event text, paper text, author text, reviewed_by text,  FOREIGN KEY (event) REFERENCES Event(title), FOREIGN KEY (author) REFERENCES Person(name),  FOREIGN KEY (paper) REFERENCES Paper(title), FOREIGN KEY (reviewed_by) REFERENCES Person(name), PRIMARY Key (event, paper, author, reviewed_by));
+insert into new_db2.the_peer_review_process select distinct event, paper, author, reviewed_by from hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as ;
+insert into new_db2.hosted_at_where select distinct event, venue from hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as ;
+insert into new_db2.and_by_whom select distinct event, chair from hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as;
+
+
+
+
+
+
+
+7-9:
+[200~The databases are generated on each trial run of the build_database.py scriptin the data_gen directory. Different randomly generated results may change results.
+All values taken in microseconds.
+You can rerun the script again to test the databases, the code should work on your machine without the need to import anything. Note that you will delete the old versions of the databases if you do. 
+
+
+Find all abstracts associated with an event where the name  of the chair contains an "a" and venue address contains 'B'
+
+select abstract from Paper inner join hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as on Paper.title=hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as.paper inner join Venue on Venue.name=hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as.venue where (instr(chair,'a')>0 and instr(Venue.address, '100')>0);
+
+select abstract from Paper inner join the_peer_review_process on Paper.title=the_peer_review_process.paper natural join hosted_at_where_and_by_whom inner join Venue on Venue.name=hosted_at_where_and_by_whom.venue where(instr(chair,'a')>0 and instr(Venue.address, '100')>0);
+
+select abstract from Paper inner join the_peer_review_process on Paper.title=the_peer_review_process.paper inner join hosted_at_where on the_peer_review_process.event = hosted_at_where.event inner join and_by_whom on and_by_whom.event = the_peer_review_process.event inner join Venue on Venue.name=hosted_at_where.venue where(instr(chair,'a')>0 and instr(Venue.address, '100')>0);
+1838.036
+1942.364
+3321.069
+
+Find all abstracts associated with an event where the phone number of the chair contains a "1" and venue address contains 'B'
+
+select abstract from Paper inner join hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as on Paper.title=hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as.paper inner join Venue on Venue.name=hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as.venue inner join Person on chair.name = person.name where (instr(chair,'1')>0 and instr(Venue.address, '100')>0);
+
+select abstract from Paper inner join the_peer_review_process on Paper.title=the_peer_review_process.paper inner join hosted_at_where_and_by_whom inner join Venue on Venue.name=hosted_at_where_and_by_whom.venue inner join Person on chair = person.name where (instr(chair,'1')>0 and instr(Venue.address, '100')>0);
+
+select abstract from Paper inner join the_peer_review_process on Paper.title=the_peer_review_process.paper inner join hosted_at_where on the_peer_review_process.event = hosted_at_where.event inner join and_by_whom on and_by_whom.event = the_peer_review_process.event inner join Venue on Venue.name=hosted_at_where.venue inner join Person on chair.name = person.name where (instr(chair,'1')>0 and instr(Venue.address, '100')>0);
+//venue, paper, event, person
+110.309
+113.123
+1756.189
+
+Find the email of all people who chaired an event hosted on a boulevard
+select email from Person inner join hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as on Person.name = hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as.chair inner join Venue on hosted_at_and_where_by_whom_with_peer_reviewed_by_and_as.venue = Venue.name where (instr(Venue.address, 'Boulevard')>0);
+
+select email from Person inner join hosted_at_where_and_by_whom on Person.name = hosted_at_where_and_by_whom.chair inner join Venue on hosted_at_where_and_by_whom.venue = Venue.name where (instr(Venue.address, 'Boulevard')>0);
+
+select email from Person inner join and_by_whom on Person.name = and_by_whom.chair inner join hosted_at_where on and_by_whom.event=hosted_at_where.event inner join Venue on hosted_at_where.venue = Venue.name where (instr(Venue.address, 'Boulevard')>0);
+//venue, event. person
+925.042
+3099.472
+1999.522
