@@ -1,0 +1,12 @@
+from 1 to 2:
+Attach d.db as new_db;
+create table Event(date text, title text primary key, phone_number text);
+create table Venue(address text, name text primary key, seats integer);
+create table Person(name text primary key, degree text, title text, email text);
+create table Paper(abstract text, pub_date text, title text primary key);
+
+create table hosted_at_where_and_by_whom(event text primary key, venue text, chair text, FOREIGN KEY (event) REFERENCES Event(title), FOREIGN KEY (venue) REFERENCES Venue(name), FOREIGN KEY (chair) REFERENCES Person(name));
+
+create table the_peer_review_process(event text,paper text, author text, reviewer text,  FOREIGN KEY (event) REFERENCES Event(title), FOREIGN KEY (chair) REFERENCES Person(name),  FOREIGN KEY (paper) REFERENCES Paper(title), FOREIGN KEY (reviewer) REFERENCES Person(name), PRIMARY Key (chair, paper, author, reviewer));
+
+
